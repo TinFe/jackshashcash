@@ -1,22 +1,48 @@
+//since copied much of this code I'm going to write verbose comments.
+
+//import traits for hashing
+use sha2::Digest;
 use sha256::digest;
-fn main() {
-    let text_data = "Mary was greeted by John.";
-    let mut nonce = 0;
 
-    println!("so far we have a sentence and a nonce.\n sentence: {text_data}\n the nonce: {nonce}");
-    println!("the nonce can be mutated. before it was {nonce}.");
-    nonce += 1;
-    println!("but now it is {nonce}");
-
-    println!("first we need to practice hashing the text_data");
-    let test_hash = digest(text_data);
-    println!("the hash of text_data is {test_hash}");
-    println!("that was successful. now we need to concatenate text_data with nonce. let's try.");
-    println!("before we concatenate we must shadow the int nonce with a string.");
-    let nonce = nonce.to_string();
-    let nonced_message = nonce + text_data;
-    println!("the concatenated nonced message is {nonced_message}");
-    println!("Alright that was successful to. now.\n Time to hash the nonced message");
-    let nonced_message_hash = digest(nonced_message.clone());
-    println!("the hash of {nonced_message} is {nonced_message_hash}");
+//hash function which takes a string as a parameter, and outputs a hash of the string as an array of 32 unsigned bytes. 
+fn hash(input: &str) -> [u8; 32] {
+    // create a hasher instance
+    let mut hasher = sha2::Sha256::new();
+    //hasher instance must be passed bytes
+    hasher.update(input.as_bytes());
+    
+    hasher.finalize().into()
 }
+
+// Count leading zero bits in the hash
+fn leading_bits(arr: &[u8; 32]) -> u32 {
+    let mut count = 0;
+    for x in arr {
+        let bits = x.leading_zeros(); // Count leading zeros in the byte
+        count += bits;
+        if bits != 8 { // If a byte is not 00000000, then we should stop. no need to check the next byte.
+            break;
+        }
+    }
+    count
+}
+
+fn main() {
+    let some_string = "Mary was greeted by John.";
+    println!("Let's see if the hash function works.");
+    
+    // Compute the hash
+    let result = hash(&some_string);
+    println!("The hex byte_array of the hash output is {:?}", result);
+    
+    // Count the leading zeros in the hash
+    let leading_0s = leading_bits(&result);
+    println!("The number of leading 0s in the hash is {}", leading_0s);
+
+    let readable_hash = digest(some_string);
+    
+    println!("The actual hash is {readable_hash}" );
+}
+    
+
+    
