@@ -27,21 +27,33 @@ fn leading_bits(arr: &[u8; 32]) -> u32 {
     count
 }
 
+fn combine_msg_nonce(message: &str, nonce: u64) -> String {
+    nonce.to_string() + message
+}
+
 fn main() {
-    let some_string = "Mary was greeted by John.";
-    println!("Let's see if the hash function works.");
+    let message = "Mary was greeted by John.";
+
+    let mut nonce: u64 =  0;
     
+    println!("at this stage we have a string and a nonce\n string: {message}\n nonce:{nonce}");
+    print!("now let's combine the nonce and the string");
+
+    let nonced_message = combine_msg_nonce(message, nonce);
+
+    println!("combined nonce and string {nonced_message}");
+
     // Compute the hash
-    let result = hash(&some_string);
+    let result = hash(&nonced_message);
     println!("The hex byte_array of the hash output is {:?}", result);
     
     // Count the leading zeros in the hash
     let leading_0s = leading_bits(&result);
     println!("The number of leading 0s in the hash is {}", leading_0s);
 
-    let readable_hash = digest(some_string);
+    let readable_hash = digest(&nonced_message);
     
-    println!("The actual hash is {readable_hash}" );
+    println!("The actual hash of {nonced_message} is {readable_hash}" );
 }
     
 
