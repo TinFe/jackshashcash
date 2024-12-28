@@ -3,6 +3,7 @@
 //import traits for hashing
 use sha2::Digest;
 use sha256::digest;
+use std::io::{self, Read};
 
 //hash function which takes a string as a parameter, and outputs a hash of the string as an array of 32 unsigned bytes. 
 fn hash(input: &str) -> [u8; 32] {
@@ -27,39 +28,34 @@ fn leading_bits(arr: &[u8; 32]) -> u32 {
     count
 }
 
-fn combine_msg_nonce(message: &str, nonce: u64) -> String {
+fn combine_msg_nonce(message: &str, nonce: u32) -> String {
     nonce.to_string() + message
 }
 
 fn main() {
-    let message = "Mary was greeted by John.";
+    println!("------------Jack's Hashcash------------");
+    println!("Type or Paste your input. Ensure your cursor is on a new line, and press Ctrl+D (Linux/macOS) or Ctrl+Z (Windows). Ensure your when you're done:");
+    let mut message = String::new();
+    let mut nonce = 0;
+    io::stdin()
+        .read_to_string(&mut message)
+        .expect("Failed to read input");
 
-    let mut nonce: u64 =  0;
+    println!("\n -----------------------------------------------------------------------------\nType desired workload (1-50) and press Enter\n -----------------------------------------------------------------------------\n");
+    let mut min_leading0s = String::new();
+        io::stdin()
+            .read_line(&mut min_leading0s)
+            .expect("Failed to read input");
     
-    println!("at this stage we have a string and a nonce\n string: {message}\n nonce:{nonce}");
-    print!("now let's combine the nonce and the string");
+    let min_leading0s: u32 = min_leading0s
+        .trim()
+        .parse()
+        .expect("enter valid number");
 
-    let nonced_message = combine_msg_nonce(message, nonce);
-
-    println!("combined nonce and string {nonced_message}");
-
-    // Compute the hash
-    let result = hash(&nonced_message);
-    println!("The hex byte_array of the hash output is {:?}", result);
     
-    // Count the leading zeros in the hash
-    let leading_0s = leading_bits(&result);
-    println!("The number of leading 0s in the hash is {}", leading_0s);
-
-    let readable_hash = digest(&nonced_message);
-    
-    println!("The actual hash of {nonced_message} is {readable_hash}" );
-
-
-    println!("-----------------------------------------\n We'll clean this up later, but now let's get started on the loop.\n!-----------------------------------------");
-    let min_leading0s: u32 = 27;
+    println!("\n-----------------------------------------------------------------------------\n Please wait. Finding Nonce.\n-----------------------------------------------------------------------------\n");
     loop {
-        let nonced_message = combine_msg_nonce(message, nonce);
+        let nonced_message = combine_msg_nonce(&message, nonce);
         let hash_result = hash(&nonced_message);
         let leading_0s = leading_bits(&hash_result);
         if leading_0s >= min_leading0s {
@@ -67,11 +63,12 @@ fn main() {
         }
         nonce += 1
     }
-    println!("After running the loop, the nonce is {nonce} and the nonced_message is {nonced_message}");
+    let nonced_message = combine_msg_nonce(&message, nonce);
+    println!("\nNonce Found!\n-----------------------------------------------------------------------------\nNonce:\n{nonce}\n");
 
-
-
-
+    println!("-------------------- Begin Proof-of-Work Message --------------------\n{nonced_message}\n-------------------- End Proof-of-Work Message --------------------\n");
+    let hash_output = digest(&nonced_message);
+    println!("\nHash:\n{:?}", hash_output);
 }
     
 
