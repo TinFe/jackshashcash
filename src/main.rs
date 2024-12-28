@@ -5,16 +5,6 @@ use sha2::Digest;
 use sha256::digest;
 use std::io::{self, Read};
 
-//hash function which takes a string as a parameter, and outputs a hash of the string as an array of 32 unsigned bytes. 
-fn hash(input: &str) -> [u8; 32] {
-    // create a hasher instance
-    let mut hasher = sha2::Sha256::new();
-    //hasher instance must be passed bytes
-    hasher.update(input.as_bytes());
-    
-    hasher.finalize().into()
-}
-
 // Count leading zero bits in the hash
 fn leading_bits(arr: &[u8; 32]) -> u32 {
     let mut count = 0;
@@ -54,9 +44,11 @@ fn main() {
 
     
     println!("\n-----------------------------------------------------------------------------\n Please wait. Finding Nonce.\n-----------------------------------------------------------------------------\n");
+    let mut hasher = sha2::Sha256::new();
     loop {
         let nonced_message = combine_msg_nonce(&message, nonce);
-        let hash_result = hash(&nonced_message);
+        hasher.update(nonced_message.as_bytes());
+        let hash_result: [u8; 32] = hasher.finalize_reset().into();
         let leading_0s = leading_bits(&hash_result);
         if leading_0s >= min_leading0s {
             break;
