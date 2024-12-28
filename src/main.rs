@@ -54,6 +54,24 @@ fn main() {
     let readable_hash = digest(&nonced_message);
     
     println!("The actual hash of {nonced_message} is {readable_hash}" );
+
+
+    println!("-----------------------------------------\n We'll clean this up later, but now let's get started on the loop.\n!-----------------------------------------");
+    let min_leading0s: u32 = 27;
+    loop {
+        let nonced_message = combine_msg_nonce(message, nonce);
+        let hash_result = hash(&nonced_message);
+        let leading_0s = leading_bits(&hash_result);
+        if leading_0s >= min_leading0s {
+            break;
+        }
+        nonce += 1
+    }
+    println!("After running the loop, the nonce is {nonce} and the nonced_message is {nonced_message}");
+
+
+
+
 }
     
 
